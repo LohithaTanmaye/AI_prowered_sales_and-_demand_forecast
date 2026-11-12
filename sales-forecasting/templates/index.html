@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ForecastAI — Sales & Demand Forecasting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">📈</div>
+    <div><span class="brand-name">ForecastAI</span><span class="brand-tag">Sales Intelligence</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-link active" data-tab="dashboard" href="#"><span>🏠</span> Dashboard</a>
+    <a class="nav-link" data-tab="products" href="#"><span>📦</span> Products</a>
+    <a class="nav-link" data-tab="forecast" href="#"><span>🔮</span> Forecast</a>
+    <a class="nav-link" data-tab="compare" href="#"><span>⚖️</span> Compare</a>
+    <a class="nav-link" data-tab="history" href="#"><span>📋</span> History</a>
+  </nav>
+  <div class="sidebar-models">
+    <div class="sm-title">ML MODELS</div>
+    <div class="sm-item"><span class="sm-dot" style="background:#6366f1"></span>Linear Regression</div>
+    <div class="sm-item"><span class="sm-dot" style="background:#a78bfa"></span>Polynomial (deg 3)</div>
+    <div class="sm-item"><span class="sm-dot" style="background:#38bdf8"></span>Holt-Winters ETS</div>
+    <div class="sm-item"><span class="sm-dot" style="background:#4ade80"></span>Random Forest</div>
+    <div class="sm-item"><span class="sm-dot" style="background:#fbbf24"></span>Gradient Boosting</div>
+    <div class="sm-item"><span class="sm-dot" style="background:#f87171"></span>Ensemble Blend</div>
+  </div>
+  <div class="sidebar-bottom">
+    <button class="seed-btn" onclick="seedDemo()">🌱 Load Demo Data</button>
+    <div class="sb-counts">
+      <span id="sb-products">0</span> products &nbsp;·&nbsp; <span id="sb-forecasts">0</span> forecasts
+    </div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <button class="burger" id="burger"><span></span><span></span><span></span></button>
+  <span class="topbar-title">📈 ForecastAI</span>
+  <div></div>
+</header>
+
+<main class="main" id="main">
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<section class="tab active" id="tab-dashboard">
+  <div class="page-hero">
+    <div>
+      <p class="eyebrow">AI-Powered · 6 ML Models · Real-time</p>
+      <h1 class="page-title">Sales & Demand <em>Intelligence</em></h1>
+      <p class="page-sub">Forecast future sales across all your products using an ensemble of 6 machine learning models with confidence intervals and inventory recommendations.</p>
+    </div>
+    <div class="hero-btns">
+      <button class="btn-glow" onclick="switchTab('forecast')">🔮 Run Forecast</button>
+      <button class="btn-ghost" onclick="seedDemo()">🌱 Load Demo</button>
+    </div>
+  </div>
+
+  <div class="kpi-strip" id="kpiStrip">
+    <div class="kpi-tile" style="--c:#6366f1"><div class="kpi-icon">📦</div><span class="kpi-val" id="kpi-products">0</span><span class="kpi-lbl">Products</span></div>
+    <div class="kpi-tile" style="--c:#4ade80"><div class="kpi-icon">💰</div><span class="kpi-val" id="kpi-revenue">₹0</span><span class="kpi-lbl">Est. Revenue (12m)</span></div>
+    <div class="kpi-tile" style="--c:#38bdf8"><div class="kpi-icon">🔮</div><span class="kpi-val" id="kpi-forecasts">0</span><span class="kpi-lbl">Forecasts Run</span></div>
+    <div class="kpi-tile" style="--c:#fbbf24"><div class="kpi-icon">📊</div><span class="kpi-val" id="kpi-categories">0</span><span class="kpi-lbl">Categories</span></div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="dcard">
+      <div class="dcard-head"><h2>🏆 Top Performers</h2><span class="dcard-sub">Last 3 months vs prior 3m</span></div>
+      <div id="topPerformers"></div>
+    </div>
+    <div class="dcard">
+      <div class="dcard-head"><h2>⚠️ Underperformers</h2><span class="dcard-sub">Declining trend</span></div>
+      <div id="lowPerformers"></div>
+    </div>
+    <div class="dcard">
+      <div class="dcard-head"><h2>🗂 By Category</h2></div>
+      <div class="cat-chart" id="catChart"></div>
+    </div>
+    <div class="dcard">
+      <div class="dcard-head"><h2>⏱ Recent Forecasts</h2><button class="view-all" onclick="switchTab('history')">View all →</button></div>
+      <div id="recentForecasts"></div>
+    </div>
+  </div>
+
+  <!-- Getting started -->
+  <div class="dcard get-started" id="getStarted" style="display:none">
+    <div class="gs-icon">🚀</div>
+    <h2>Get Started</h2>
+    <p>Load demo data or add your own products to begin forecasting.</p>
+    <div class="gs-steps">
+      <div class="gs-step"><span>1</span><p>Load demo data or add your products with historical sales</p></div>
+      <div class="gs-step"><span>2</span><p>Go to <strong>Forecast</strong> tab, select a product and configure horizon</p></div>
+      <div class="gs-step"><span>3</span><p>Review ML results, confidence intervals, and inventory recommendations</p></div>
+    </div>
+    <button class="btn-glow" onclick="seedDemo()">🌱 Load Demo Data</button>
+  </div>
+</section>
+
+<!-- ══════════════ PRODUCTS ══════════════ -->
+<section class="tab" id="tab-products">
+  <div class="page-hero">
+    <div><p class="eyebrow">Manage your product catalogue</p><h1 class="page-title">Product <em>Manager</em></h1></div>
+    <div class="hero-btns">
+      <button class="btn-glow" onclick="openAddProduct()">+ Add Product</button>
+      <button class="btn-ghost" onclick="openCSVUpload()">📂 Upload CSV</button>
+    </div>
+  </div>
+
+  <div class="products-grid" id="productsGrid">
+    <div class="prod-empty"><div style="font-size:2rem;margin-bottom:.5rem">📦</div><p>No products yet. Add a product or load demo data.</p></div>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div class="modal-bg" id="addProdModal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-hd"><h2>📦 Add Product</h2><button class="modal-x" onclick="closeProdModal()">×</button></div>
+      <div class="form-stack">
+        <div class="fg"><label>Product Name <span class="req">*</span></label><input type="text" class="inp" id="pName" placeholder="e.g. iPhone 15 Pro"/></div>
+        <div class="form-row2">
+          <div class="fg"><label>Category</label>
+            <select class="inp" id="pCategory">
+              <option>Electronics</option><option>Food & Bev</option><option>Apparel</option>
+              <option>Healthcare</option><option>Sports</option><option>Home & Living</option>
+              <option>Automotive</option><option>General</option>
+            </select>
+          </div>
+          <div class="fg"><label>Unit</label>
+            <select class="inp" id="pUnit"><option>units</option><option>kg</option><option>liters</option><option>pairs</option><option>bottles</option><option>packs</option></select>
+          </div>
+        </div>
+        <div class="fg"><label>Unit Price (₹)</label><input type="number" class="inp" id="pPrice" placeholder="e.g. 5000" min="0"/></div>
+        <div class="fg">
+          <label>Historical Sales Data</label>
+          <p style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">Enter monthly sales — one row per month (YYYY-MM, value). Or leave blank and we'll generate sample data.</p>
+          <textarea class="inp" id="pData" rows="6" placeholder="2024-01, 500&#10;2024-02, 530&#10;2024-03, 480&#10;2024-04, 610&#10;..."></textarea>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn-outline-sm" onclick="closeProdModal()">Cancel</button>
+        <button class="btn-glow" onclick="saveProduct()">Save Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV Upload Modal -->
+  <div class="modal-bg" id="csvModal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-hd"><h2>📂 Upload CSV</h2><button class="modal-x" onclick="closeCSVModal()">×</button></div>
+      <div class="form-stack">
+        <div class="fg"><label>Product Name</label><input type="text" class="inp" id="csvName" placeholder="Product name"/></div>
+        <div class="form-row2">
+          <div class="fg"><label>Category</label><select class="inp" id="csvCategory"><option>Electronics</option><option>Food & Bev</option><option>Apparel</option><option>Healthcare</option><option>General</option></select></div>
+          <div class="fg"><label>Price (₹)</label><input type="number" class="inp" id="csvPrice" placeholder="0"/></div>
+        </div>
+        <div class="fg"><label>CSV File</label>
+          <p style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">Format: date (YYYY-MM), value — one per row with header row.</p>
+          <input type="file" class="inp" id="csvFile" accept=".csv"/>
+        </div>
+        <div class="csv-example"><strong>Example CSV:</strong><br/>date,sales<br/>2024-01,500<br/>2024-02,530</div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn-outline-sm" onclick="closeCSVModal()">Cancel</button>
+        <button class="btn-glow" onclick="uploadCSV()">Upload & Save</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FORECAST ══════════════ -->
+<section class="tab" id="tab-forecast">
+  <div class="page-hero">
+    <div><p class="eyebrow">6 ML Models · Confidence Intervals · Inventory AI</p><h1 class="page-title">Demand <em>Forecast</em></h1></div>
+  </div>
+
+  <div class="forecast-layout">
+    <!-- Config panel -->
+    <div class="fc-config">
+      <div class="dcard">
+        <div class="dcard-head"><h2>⚙️ Forecast Settings</h2></div>
+        <div class="form-stack">
+          <div class="fg"><label>Select Product <span class="req">*</span></label>
+            <select class="inp" id="fcProduct" onchange="onProductSelect()">
+              <option value="">— Select a product —</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Forecast Horizon: <span id="horizonVal" style="color:var(--accent)">6 months</span></label>
+            <input type="range" class="slider" min="1" max="24" value="6" id="horizonSlider" oninput="updateHorizon()"/>
+            <div class="horizon-labels"><span>1m</span><span>12m</span><span>24m</span></div>
+          </div>
+          <div class="fg"><label>Models to Show</label>
+            <div class="model-checks" id="modelChecks">
+              <label class="mchk"><input type="checkbox" value="Linear" checked/><span style="color:#6366f1">● Linear</span></label>
+              <label class="mchk"><input type="checkbox" value="Polynomial" checked/><span style="color:#a78bfa">● Polynomial</span></label>
+              <label class="mchk"><input type="checkbox" value="Holt-Winters" checked/><span style="color:#38bdf8">● Holt-Winters</span></label>
+              <label class="mchk"><input type="checkbox" value="Random Forest" checked/><span style="color:#4ade80">● Random Forest</span></label>
+              <label class="mchk"><input type="checkbox" value="Gradient Boosting" checked/><span style="color:#fbbf24">● Gradient Boosting</span></label>
+              <label class="mchk"><input type="checkbox" value="Ensemble" checked/><span style="color:#f87171">● Ensemble</span></label>
+            </div>
+          </div>
+          <button class="btn-glow fc-run-btn" onclick="runForecast()" id="fcRunBtn">🔮 Run Forecast</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="fc-results">
+      <div class="fc-empty" id="fcEmpty">
+        <div class="fce-icon">🔮</div>
+        <h3>Configure & Run Forecast</h3>
+        <p>Select a product and click Run Forecast to get AI-powered predictions.</p>
+      </div>
+
+      <div id="fcOutput" style="display:none">
+        <!-- KPI row -->
+        <div class="fc-kpis" id="fcKpis"></div>
+
+        <!-- Main chart -->
+        <div class="dcard">
+          <div class="dcard-head"><h2 id="fcChartTitle">Forecast Chart</h2>
+            <div class="chart-toggle-btns">
+              <button class="ctb active" onclick="setChartView(this,'forecast')">Forecast</button>
+              <button class="ctb" onclick="setChartView(this,'decomposition')">Decomposition</button>
+              <button class="ctb" onclick="setChartView(this,'ma')">Moving Avg</button>
+            </div>
+          </div>
+          <canvas id="fcChart" height="340"></canvas>
+        </div>
+
+        <!-- Model metrics -->
+        <div class="dcard">
+          <div class="dcard-head"><h2>📊 Model Accuracy Metrics</h2><span class="dcard-sub">Validated on held-out data</span></div>
+          <div class="metrics-table" id="metricsTable"></div>
+        </div>
+
+        <!-- Forecast table -->
+        <div class="dcard">
+          <div class="dcard-head"><h2>📅 Monthly Forecast Table</h2><button class="btn-ghost" onclick="exportForecastCSV()" style="padding:.3rem .75rem;font-size:.75rem">⬇ CSV</button></div>
+          <div class="table-wrap"><table class="fc-table" id="fcTable"></table></div>
+        </div>
+
+        <!-- Bottom row -->
+        <div class="fc-bottom-grid">
+          <div class="dcard">
+            <div class="dcard-head"><h2>📦 Inventory Recommendations</h2></div>
+            <div id="inventoryRec"></div>
+          </div>
+          <div class="dcard">
+            <div class="dcard-head"><h2>⚠️ Anomaly Detection</h2></div>
+            <div id="anomalyList"></div>
+          </div>
+          <div class="dcard">
+            <div class="dcard-head"><h2>📈 Trend Analysis</h2></div>
+            <div id="trendAnalysis"></div>
+          </div>
+        </div>
+
+        <!-- Revenue forecast -->
+        <div class="dcard" id="revenueCard" style="display:none">
+          <div class="dcard-head"><h2>💰 Revenue Forecast</h2></div>
+          <canvas id="revenueChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ COMPARE ══════════════ -->
+<section class="tab" id="tab-compare">
+  <div class="page-hero">
+    <div><p class="eyebrow">Side-by-side analysis</p><h1 class="page-title">Product <em>Comparison</em></h1></div>
+    <button class="btn-glow" onclick="runComparison()">⚖️ Compare Selected</button>
+  </div>
+  <div class="dcard">
+    <div class="dcard-head"><h2>Select Products to Compare</h2></div>
+    <div class="compare-sel" id="compareSel"></div>
+  </div>
+  <div id="compareOutput" style="display:none">
+    <div class="dcard"><div class="dcard-head"><h2>📊 Sales Volume Comparison</h2></div><canvas id="compareChart" height="300"></canvas></div>
+    <div class="compare-table-card dcard"><div class="dcard-head"><h2>📋 Comparison Summary</h2></div><div id="compareTable"></div></div>
+  </div>
+</section>
+
+<!-- ══════════════ HISTORY ══════════════ -->
+<section class="tab" id="tab-history">
+  <div class="page-hero">
+    <div><p class="eyebrow">Forecast log</p><h1 class="page-title">Forecast <em>History</em></h1></div>
+  </div>
+  <div class="history-list" id="historyList">
+    <div class="hist-empty"><div style="font-size:2rem;margin-bottom:.5rem">📋</div><p>No forecasts run yet.</p></div>
+  </div>
+</section>
+
+</main>
+
+<!-- Loading overlay -->
+<div class="gen-loading" id="genLoading" style="display:none">
+  <div class="gl-inner">
+    <div class="gl-spinner"></div>
+    <h3 id="glTitle">Running Forecast…</h3>
+    <p id="glStatus">Training ML models on historical data…</p>
+    <div class="gl-steps" id="glSteps">
+      <div class="gls active">Loading historical data</div>
+      <div class="gls">Training Linear & Polynomial models</div>
+      <div class="gls">Training Holt-Winters ETS</div>
+      <div class="gls">Training Random Forest & Gradient Boosting</div>
+      <div class="gls">Building ensemble forecast</div>
+      <div class="gls">Computing confidence intervals</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
